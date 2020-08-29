@@ -1,11 +1,17 @@
 import tinyweb
 from machine import Pin
+from machine import reset
 from time import sleep
+import json
+
+settings=json.loads(''.join(open('settings.json').readlines()))
 
 # Create web server application
 app = tinyweb.webserver()
-Button=Pin(2,Pin.OUT)
-Button.on()
+Button={}
+for name in settings["buttons"].keys():
+    Button[name]=Pin(settings["buttons"][name]["pin"],Pin.OUT)
+    Button[name].off()
 
 # Index page
 @app.route('/')
@@ -13,20 +19,78 @@ async def index(request, response):
     # Start HTTP response with content-type text/html
     await response.start_html()
     # Send actual HTML page
-    await response.send('<html><body><h1>Hi George!</h1><a href="button/1">Push the garage door button</a></html>\n')
+    await response.send('''<html><head>
+                           <style>.button {  display: inline-block;  border-radius: 4px;  background-color: #00001e;  border: none;  color: #FFFFFF;  text-align: center;  font-size: 28px;  padding: 20px;  width: 200px;  transition: all 0.5s;  cursor: pointer;  margin: 5px;}</style>
+                           </head><body><h1>George\'s Garage</h1>
+                           <a href="button/1"><button class="button">1</button></a>
+                           <a href="button/2"><button class="button">2</button></a>
+                           <a href="button/3"><button class="button">3</button></a>
+                           </html>\n''')
 
-
-# Another one, more complicated page
-@app.route('/button/<nr>')
-async def table(request, response,nr):
+@app.route('/reset')
+async def index(request, response):
     # Start HTTP response with content-type text/html
-    Button.off()
-    sleep(1)
-    Button.on()
     await response.start_html()
-    await response.send('<html><body><h1>Hi George!</h1>Button number %s pushed. <a href="/">Go back.</a> <a href="button">Or push it again.</a></html>\n'%nr)
+    # Send actual HTML page
+    await response.send('''<html><head>
+                           <style>.button {  display: inline-block;  border-radius: 4px;  background-color: #00001e;  border: none;  color: #FFFFFF;  text-align: center;  font-size: 28px;  padding: 20px;  width: 200px;  transition: all 0.5s;  cursor: pointer;  margin: 5px;}</style>
+                           </head><body><h1>|RESETTING...</h1>
+                           </html>\n''')
+    reset()
 
+@app.route('/button/<nr>')
+async def button(request, response,nr):
+    # Start HTTP response with content-type text/html
+    Button[nr].on()
+    sleep(settings['buttons'][nr]['delay'])
+    Button[str(nr)].off()
+    print ('button %s (Pin %s) pressed for %s seconds'%(nr,Button[nr],settings['buttons'][nr]['delay']))
+    await response.start_html()
+    await response.send('<html><head><meta http-equiv="refresh" content="0;url=/" /></head><body><h1>Hi George!</h1>Button number %s pushed for %s seconds. <a href="/">Go back.</a></html>\n'%(nr,settings['buttons'][str(nr)]['delay']))
+
+def Write_Settings():
+    File=open('settings.json','w')
+    File.write(json.dumps(settings))
+    File.close()
+
+#@app.route('/config',save_headers=[])
+class config():
+    def get(self,data):
+        SanitizedSettings=settings.copy()
+        if 'password' in SanitizedSettings:
+            SanitizedSettings['password']='*not displayed*'
+        if 'AP-password' in SanitizedSettings:
+            SanitizedSettings['AP-password']='*not displayed*'
+        return SanitizedSettings
+    def post(self, data):
+        print (data)
+        for Setting in data.keys():
+            settings[Setting]=data[Setting]
+            print("Setting %s to %s"%(Setting,data[Setting]))
+        Write_Settings()
+        return data
+    
+    def delete(self,data):
+        for Setting in data.keys():
+            settings.pop(Setting)
+            Write_Settings()
+        return data    
+
+#await response.start_html()
+#    print (request.query_string)
+#    a=tinyweb.server.parse_query_string(request.query_string)
+#    print (a)
+#    configs=str(a)
+#    await response.send(configs)
+    
 
 def run():
     print ("running app")
+    app.add_resource(config,"/config")
     app.run(host='0.0.0.0', port=80)
+
+#
+#        form='''<html><head></head><body><h1>Settings</h1><form method='post'><table>'''
+#        form += "<tr><td>AP-ssid</td><td><input type='text' name='AP-ssid'>%s</input></td></tr>"%settings['AP-ssid']
+#        form +="</table><input type='submit'></body></html>"
+#        return form

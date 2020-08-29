@@ -1,14 +1,4 @@
-{"password": "blueground856",
- "AP-password": "OpenSesame2020",
- "DNS": "8.8.8.8", "IP":
- "192.168.1.234",
- "AP-ssid": "Georges Garage Door Prototype",
- "NetMask": "255.255.255.0",
- "buttons": {
-     "2": {"pin": 3, "delay": 2},
-     "1": {"pin": 2, "delay": 2},
-     "3": {"pin": 4, "delay": 2},
-     },
- "ssid": "BLUEGROUND 856",
- "Gateway": "192.168.1.1"
- }
+{"password": "blueground856",
+ "DNS": "8.8.8.8",
+ "AP-password": "OpenSesame2020",
+ "buttons": {"1": {"pin": 5, "delay": 2}, "3": {"pin": 13, "delay": 2}, "2": {"pin": 4, "delay": 2}}, "AP-ssid": "Georges Garage Door Prototype", "NetMask": "255.255.255.0", "ssid": "BLUEGROUND 856", "Gateway": "192.168.1.1"}
