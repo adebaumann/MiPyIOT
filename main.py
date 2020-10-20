@@ -3,7 +3,7 @@ import json
 import time
 from machine import Pin
 import LED
-import garage
+import IOTdevice
 
 #import settings
 settings=json.loads(''.join(open('settings.json').readlines()))
@@ -50,4 +50,4 @@ def AP():
 netstop() 
 if STA() != True:
     AP()
-garage.run()
+IOTdevice.run()

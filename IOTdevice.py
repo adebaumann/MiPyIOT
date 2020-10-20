@@ -8,6 +8,8 @@ settings=json.loads(''.join(open('settings.json').readlines()))
 
 # Create web server application
 app = tinyweb.webserver()
+
+# Hardware Setup, e.g. Garage Door Remote
 Button={}
 for name in settings["buttons"].keys():
     Button[name]=Pin(settings["buttons"][name]["pin"],Pin.OUT)
@@ -18,10 +20,10 @@ for name in settings["buttons"].keys():
 async def index(request, response):
     # Start HTTP response with content-type text/html
     await response.start_html()
-    # Send actual HTML page
+    # Send actual HTML page, in this example with three buttons
     await response.send('''<html><head>
                            <style>.button {  display: inline-block;  border-radius: 4px;  background-color: #00001e;  border: none;  color: #FFFFFF;  text-align: center;  font-size: 28px;  padding: 20px;  width: 200px;  transition: all 0.5s;  cursor: pointer;  margin: 5px;}</style>
-                           </head><body><h1>George\'s Garage</h1>
+                           </head><body><h1>Garage Door Remote</h1>
                            <a href="button/1"><button class="button">1</button></a>
                            <a href="button/2"><button class="button">2</button></a>
                            <a href="button/3"><button class="button">3</button></a>
@@ -29,22 +31,23 @@ async def index(request, response):
 
 @app.route('/reset')
 async def index(request, response):
-    # Start HTTP response with content-type text/html
     await response.start_html()
-    # Send actual HTML page
     await response.send('''<html><head>
                            <style>.button {  display: inline-block;  border-radius: 4px;  background-color: #00001e;  border: none;  color: #FFFFFF;  text-align: center;  font-size: 28px;  padding: 20px;  width: 200px;  transition: all 0.5s;  cursor: pointer;  margin: 5px;}</style>
-                           </head><body><h1>|RESETTING...</h1>
+                           </head><body><h1>RESETTING...</h1>
                            </html>\n''')
     reset()
 
 @app.route('/button/<nr>')
 async def button(request, response,nr):
     # Start HTTP response with content-type text/html
+    # Machine control
     Button[nr].on()
     sleep(settings['buttons'][nr]['delay'])
     Button[str(nr)].off()
+    # Debug string
     print ('button %s (Pin %s) pressed for %s seconds'%(nr,Button[nr],settings['buttons'][nr]['delay']))
+    #Send response
     await response.start_html()
     await response.send('<html><head><meta http-equiv="refresh" content="0;url=/" /></head><body><h1>Hi George!</h1>Button number %s pushed for %s seconds. <a href="/">Go back.</a></html>\n'%(nr,settings['buttons'][str(nr)]['delay']))
 
@@ -76,21 +79,8 @@ class config():
             Write_Settings()
         return data    
 
-#await response.start_html()
-#    print (request.query_string)
-#    a=tinyweb.server.parse_query_string(request.query_string)
-#    print (a)
-#    configs=str(a)
-#    await response.send(configs)
-    
 
 def run():
     print ("running app")
     app.add_resource(config,"/config")
     app.run(host='0.0.0.0', port=80)
-
-#
-#        form='''<html><head></head><body><h1>Settings</h1><form method='post'><table>'''
-#        form += "<tr><td>AP-ssid</td><td><input type='text' name='AP-ssid'>%s</input></td></tr>"%settings['AP-ssid']
-#        form +="</table><input type='submit'></body></html>"
-#        return form
