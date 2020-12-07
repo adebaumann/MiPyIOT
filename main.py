@@ -3,7 +3,7 @@ import json
 import time
 from machine import Pin
 import LED
-import IOTdevice
+import Device
 
 #import settings
 settings=json.loads(''.join(open('settings.json').readlines()))
@@ -13,7 +13,7 @@ def netstop():
     n.active(False)
     n=network.WLAN(network.AP_IF)
     n.active(False)
-    
+
 def STA():
     """Connects Board as Client to WiFi-Network. LED.Blinks 5 times short if successful"""
     sta=network.WLAN(network.STA_IF)
@@ -47,7 +47,7 @@ def AP():
     print("AP configured")
     LED.Morse ('AP')
 
-netstop() 
+netstop()
 if STA() != True:
     AP()
-IOTdevice.run()
+Device.run()
