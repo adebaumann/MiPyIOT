@@ -4,7 +4,7 @@ from time import sleep
 class LED:
     """Define a LED on a defined pin"""
     def __init__(self,LEDPin=2):
-        self.LEDPin=Pin(2,Pin.OUT)
+        self.LEDPin=Pin(LEDPin,Pin.OUT)
         print ("New LED defined on Pin %s"%LEDPin)
     def Blink(self,number,timeon=0.2,timeoff=0.2):
         """Blinks the LED (number) times, (timeon) and (timeoff) are self explanatory"""
