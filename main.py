@@ -2,11 +2,17 @@ import network
 import json
 import time
 from machine import Pin
-import LED
+import aabiot.LED
 import Device
+import aabiot
+
+if aabiot.DoubleReset():
+    print("Double Reset - Starting AP")
+    AP()
 
 #import settings
 settings=json.loads(''.join(open('settings.json').readlines()))
+LED=aabiot.LED.LED()
 
 def netstop():
     n=network.WLAN(network.STA_IF)
@@ -15,7 +21,7 @@ def netstop():
     n.active(False)
 
 def STA():
-    """Connects Board as Client to WiFi-Network. LED.Blinks 5 times short if successful"""
+    """Connects Board as Client to WiFi-Network. LED.Blinks 5 times short if successful and then displays the IP address in morse code"""
     sta=network.WLAN(network.STA_IF)
     if sta.isconnected():
         LED.Blink(5)
@@ -40,7 +46,7 @@ def STA():
     return False
 
 def AP():
-    """Provides Access point with settings in settings.json. LED.Blinks 3 long, 3 short on success"""
+    """Provides Access point with settings in settings.json. LED blinks 'AP' in morse code on success"""
     ap=network.WLAN(network.AP_IF)
     ap.active(True)
     ap.config(essid=settings['AP-ssid'],password=settings['AP-password'])
