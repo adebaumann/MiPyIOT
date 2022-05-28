@@ -7,11 +7,12 @@ weigand.py - read card IDs from a wiegand card reader
 from machine import Pin, Timer
 import utime
 
-CARD_MASK = 0b11111111111111110 # 16 ones
-FACILITY_MASK = 0b1111111100000000000000000 # 8 ones
+CARD_MASK = 0b11111111111111110  # 16 ones
+FACILITY_MASK = 0b1111111100000000000000000  # 8 ones
 
 # Max pulse interval: 2ms
 # pulse width: 50us
+
 
 class Wiegand:
     def __init__(self, pin0, pin1, callback):
@@ -35,8 +36,11 @@ class Wiegand:
         self.timer.init(period=50, mode=Timer.PERIODIC, callback=self._cardcheck)
         self.cards_read = 0
 
-    def _on_pin0(self, newstate): self._on_pin(0, newstate)
-    def _on_pin1(self, newstate): self._on_pin(1, newstate)
+    def _on_pin0(self, newstate):
+        self._on_pin(0, newstate)
+
+    def _on_pin1(self, newstate):
+        self._on_pin(1, newstate)
 
     def _on_pin(self, is_one, newstate):
         now = utime.ticks_ms()
@@ -46,22 +50,24 @@ class Wiegand:
 
         self.last_bit_read = now
         self.next_card <<= 1
-        if is_one: self.next_card |= 1
+        if is_one:
+            self.next_card |= 1
         self._bits += 1
 
     def get_card(self):
         if self.last_card is None:
             return None
-        return ( self.last_card & CARD_MASK ) >> 1
-        
+        return (self.last_card & CARD_MASK) >> 1
+
     def get_facility_code(self):
         if self.last_card is None:
             return None
         # Specific to standard 26bit wiegand
-        return ( self.last_card & FACILITY_MASK ) >> 17
+        return (self.last_card & FACILITY_MASK) >> 17
 
     def _cardcheck(self, t):
-        if self.last_bit_read is None: return
+        if self.last_bit_read is None:
+            return
         now = utime.ticks_ms()
         if now - self.last_bit_read > 50:
             # too slow - new start!
